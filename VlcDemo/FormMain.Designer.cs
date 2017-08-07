@@ -171,6 +171,9 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormMain";
             this.Text = "P";
+            this.Shown += new System.EventHandler(this.FormMain_Shown);
+            this.LocationChanged += new System.EventHandler(this.FormMain_LocationChanged);
+            this.SizeChanged += new System.EventHandler(this.FormMain_SizeChanged);
             this.panelControls.ResumeLayout(false);
             this.panelDisplay.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.trackBarSeek)).EndInit();

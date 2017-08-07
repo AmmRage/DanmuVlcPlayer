@@ -76,19 +76,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Danmu\ControlTest.cs">
+    <Compile Include="Danmu\DanmuItem.cs" />
+    <Compile Include="Danmu\FormDanmu.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Danmu\ControlTest.Designer.cs">
-      <DependentUpon>ControlTest.cs</DependentUpon>
+    <Compile Include="Danmu\FormDanmu.Designer.cs">
+      <DependentUpon>FormDanmu.cs</DependentUpon>
     </Compile>
-    <Compile Include="Danmu\DanmuBox.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Danmu\DanmuBox.Designer.cs">
-      <DependentUpon>DanmuBox.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Danmu\DanmuItem.cs" />
     <Compile Include="FormMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -98,11 +92,8 @@
     <Compile Include="MediaInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Danmu\ControlTest.resx">
-      <DependentUpon>ControlTest.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Danmu\DanmuBox.resx">
-      <DependentUpon>DanmuBox.cs</DependentUpon>
+    <EmbeddedResource Include="Danmu\FormDanmu.resx">
+      <DependentUpon>FormDanmu.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormMain.resx">
       <DependentUpon>FormMain.cs</DependentUpon>

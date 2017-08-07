@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Vlc.DotNet.Core.Interops;
 
@@ -20,28 +21,10 @@ namespace VlcDemo
         [STAThread]
         static void Main()
         {
-            //var a = new Action<string>((l) =>
-            //{
-            //    if (!File.Exists(l))
-            //        return;
-            //    else
-            //        Debug.WriteLine(l);
-            //    var myLibVlcCoreDllHandle = LoadLibrary(l);
-
-            //    if (myLibVlcCoreDllHandle == IntPtr.Zero)
-            //    {
-            //        var errCode = Marshal.GetLastWin32Error();
-            //        Debug.WriteLine(errCode);
-            //    }
-            //});
-
-            
-
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new FormMain());
-            Application.Run(new ControlTest());
+            var masterForm = new FormMain();
+            Application.Run(masterForm);
         }
     }
 }

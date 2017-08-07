@@ -9,18 +9,24 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Vlc.DotNet.Core.Interops.Signatures;
 using Vlc.DotNet.Forms;
+using VlcDemo.Danmu;
 using VlcDemo.Properties;
 
 namespace VlcDemo
 {
     public partial class FormMain : Form
     {
-        private VlcControl myVlcControl;
-        private DanmuBox danmuBox1;
+        public event Action<Size> MasterSizeChanged;
+        public event Action<Point> MasterLocationChanged;
+        public event Action MasterClosed;
 
+        private FormDanmu damnu;
+
+        private VlcControl myVlcControl;
         public FormMain()
         {
             InitializeComponent();
@@ -33,44 +39,29 @@ namespace VlcDemo
             this.myVlcControl = new VlcControl();
 
             ((ISupportInitialize)(this.myVlcControl)).BeginInit();
-
-            //this.myVlcControl.Anchor = (AnchorStyles.Top | AnchorStyles.Bottom| AnchorStyles.Left)| AnchorStyles.Right;
+            var currentAssembly = Assembly.GetEntryAssembly();
+            var currentDirectory = new FileInfo(currentAssembly.Location).DirectoryName;
             this.myVlcControl.Dock = DockStyle.Fill;
             this.myVlcControl.BackColor = SystemColors.ButtonShadow;
-            //this.myVlcControl.Location = new Point(12, 12);
             this.myVlcControl.Name = "myVlcControl";
-            //this.myVlcControl.Size = new Size(564, 338);
             this.myVlcControl.TabIndex = 0;
             this.myVlcControl.Text = "vlcRincewindControl1";
-            this.myVlcControl.VlcLibDirectory = new DirectoryInfo(@"C:\Users\ZhiYong\Documents\Projects\Private\Practice\VlcDemo\bin\lib\x86");
-
+            if (IntPtr.Size == 4)
+                this.myVlcControl.VlcLibDirectory = new DirectoryInfo(Path.Combine(currentDirectory, @"..\..\..\lib\x86\"));
+            else
+                this.myVlcControl.VlcLibDirectory = new DirectoryInfo(Path.Combine(currentDirectory, @"..\..\..\lib\x64\"));
+            
             this.myVlcControl.EndReached += MyVlcControlEndReached;
             this.myVlcControl.Playing += MyVlcControlPlaying;
             this.myVlcControl.Paused += MyVlcControlPaused;
             this.myVlcControl.PositionChanged += MyVlcControlPositionChanged;
             this.myVlcControl.EncounteredError += MyVlcControlEncounteredError;
             this.myVlcControl.VlcLibDirectoryNeeded += MyVlcControlMyVlcControlLibDirectoryNeeded;
-
-
-            //this.myVlcControl.TimeChanged += (o, e) =>
-            //{
-            //    Debug.WriteLine(e.NewTime);
-            //};
+            
             this.panelDisplay.Controls.Add(this.myVlcControl);
             ((ISupportInitialize)(this.myVlcControl)).EndInit();
 
             this.myVlcControl.BringToFront();
-
-            danmuBox1 = new DanmuBox();
-
-            danmuBox1.Location = this.myVlcControl.Location;
-            danmuBox1.Name = "danmuBox1";
-            danmuBox1.Size = this.myVlcControl.Size;
-            danmuBox1.TabIndex = 0;
-            this.panelDisplay.Controls.Add(danmuBox1);
-            danmuBox1.BringToFront();
-
-            this.myVlcControl.TimeChanged += danmuBox1.RollDanmu;
         }
 
         private void MyVlcControlMyVlcControlLibDirectoryNeeded(object sender, VlcLibDirectoryNeededEventArgs e)
@@ -100,13 +91,11 @@ namespace VlcDemo
 
         private void MyVlcControlEncounteredError(object sender, Vlc.DotNet.Core.VlcMediaPlayerEncounteredErrorEventArgs e)
         {
-            Debug.WriteLine(e);
-            //MessageBox.Show(e.ToString());
         }
 
         private void MyVlcControlPositionChanged(object sender, Vlc.DotNet.Core.VlcMediaPlayerPositionChangedEventArgs e)
         {
-            //Debug.WriteLine(e.NewPosition);
+            Debug.WriteLine(e.NewPosition);
             ShowPlayProgress(e.NewPosition);
         }
 
@@ -117,7 +106,6 @@ namespace VlcDemo
 
         private void MyVlcControlPlaying(object sender, Vlc.DotNet.Core.VlcMediaPlayerPlayingEventArgs e)
         {
-            Debug.WriteLine("playing");
         }
 
         private void MyVlcControlEndReached(object sender, Vlc.DotNet.Core.VlcMediaPlayerEndReachedEventArgs e)
@@ -143,13 +131,16 @@ namespace VlcDemo
 
         private void Play()
         {
+            if (this.listBoxList.Items.Count == 0)
+                return;
             if (this.myVlcControl.IsPlaying)
                 this.myVlcControl.Stop();
             var file = (this.listBoxList.SelectedItem as MediaInfo).FileFullname;
+            var extension = Path.GetExtension(file);
             try
             {
-                if(File.Exists(file.Replace(".mp4", ".cmt.xml")))
-                    danmuBox1.LoadDanmuFile(file.Replace(".mp4", ".cmt.xml"));
+                if (File.Exists(file.Replace(extension, ".cmt.xml")))
+                    this.damnu.LoadDanmuFile(file.Replace(extension, ".cmt.xml"));
                 this.myVlcControl.Play(new FileInfo(file));
             }
             catch (Exception ex)
@@ -165,7 +156,6 @@ namespace VlcDemo
             var result = this.openFileDialogOpen.ShowDialog();
             if (result != DialogResult.OK)
                 return;
-            //Settings.Default.HistotyOpenLocation = openFileDialogOpen.
             
             if (this.openFileDialogOpen.FileNames == null)
                 return;
@@ -194,7 +184,6 @@ namespace VlcDemo
             //{
             //    this.myVlcControl.Stop();
             //}));
-
             this.trackBarSeek.Value = 0;
             Play();
             Debug.WriteLine("play started");
@@ -233,6 +222,11 @@ namespace VlcDemo
             }
         }
 
+        private void buttonStop_Click(object sender, EventArgs e)
+        {
+            this.myVlcControl.Stop();
+        }
+
         protected override void OnClosed(EventArgs e)
         {
             try
@@ -242,18 +236,49 @@ namespace VlcDemo
                 {
                     Thread.Sleep(200);
                 }
-                //this.myVlcControl.Dispose();
+                if (MasterClosed != null)
+                    MasterClosed();
             }
-            catch
+            catch(Exception ex)
             {
+
             }
             base.OnClosed(e);
             
         }
 
-        private void buttonStop_Click(object sender, EventArgs e)
+        private void FormMain_LocationChanged(object sender, EventArgs e)
         {
-            this.myVlcControl.Stop();
+            if (MasterLocationChanged != null)
+            {
+                Point location = this.myVlcControl.PointToScreen(Point.Empty);
+                //var p = this.Location;
+                //p.Offset(location);
+                MasterLocationChanged(location);
+            }
+        }
+
+        private void FormMain_SizeChanged(object sender, EventArgs e)
+        {
+            if (MasterSizeChanged != null)
+            {
+                MasterSizeChanged(this.myVlcControl.Size);
+            }
+        }
+
+        private void FormMain_Shown(object sender, EventArgs e)
+        {
+            var location = this.myVlcControl.PointToScreen(Point.Empty);
+            Task.Factory.StartNew(() =>
+            {
+                damnu = new FormDanmu(location, this.myVlcControl.Size);
+
+                this.MasterLocationChanged += damnu.SetLocation;
+                this.MasterSizeChanged += damnu.SetSize;
+                this.MasterClosed += damnu.SetClose;
+
+                Application.Run(damnu);
+            });
         }
     }
 }
