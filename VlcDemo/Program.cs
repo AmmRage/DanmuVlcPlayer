@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Vlc.DotNet.Core.Interops;
 
 namespace VlcDemo
 {
@@ -23,7 +16,7 @@ namespace VlcDemo
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            var masterForm = new FormMain();
+            var masterForm = new FormMf();
             Application.Run(masterForm);
         }
     }

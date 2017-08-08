@@ -18,7 +18,7 @@ using VlcDemo.Properties;
 
 namespace VlcDemo
 {
-    public partial class FormMain : Form
+    public partial class FormVlc : Form
     {
         public event Action<Size> MasterSizeChanged;
         public event Action<Point> MasterLocationChanged;
@@ -27,7 +27,7 @@ namespace VlcDemo
         private FormDanmu damnu;
 
         private VlcControl myVlcControl;
-        public FormMain()
+        public FormVlc()
         {
             InitializeComponent();
             AddVlcPlay();
@@ -47,9 +47,9 @@ namespace VlcDemo
             this.myVlcControl.TabIndex = 0;
             this.myVlcControl.Text = "vlcRincewindControl1";
             if (IntPtr.Size == 4)
-                this.myVlcControl.VlcLibDirectory = new DirectoryInfo(Path.Combine(currentDirectory, @"..\..\..\lib\x86\"));
+                this.myVlcControl.VlcLibDirectory = new DirectoryInfo(Path.Combine(currentDirectory, @"..\lib\x86\"));
             else
-                this.myVlcControl.VlcLibDirectory = new DirectoryInfo(Path.Combine(currentDirectory, @"..\..\..\lib\x64\"));
+                this.myVlcControl.VlcLibDirectory = new DirectoryInfo(Path.Combine(currentDirectory, @"..\lib\x64\"));
             
             this.myVlcControl.EndReached += MyVlcControlEndReached;
             this.myVlcControl.Playing += MyVlcControlPlaying;
@@ -71,9 +71,9 @@ namespace VlcDemo
             if (currentDirectory == null)
                 return;
             if (AssemblyName.GetAssemblyName(currentAssembly.Location).ProcessorArchitecture == ProcessorArchitecture.X86)
-                e.VlcLibDirectory = new DirectoryInfo(Path.Combine(currentDirectory, @"..\..\..\lib\x86\"));
+                e.VlcLibDirectory = new DirectoryInfo(Path.Combine(currentDirectory, @"..\lib\x86\"));
             else
-                e.VlcLibDirectory = new DirectoryInfo(Path.Combine(currentDirectory, @"..\..\..\lib\x64\"));
+                e.VlcLibDirectory = new DirectoryInfo(Path.Combine(currentDirectory, @"..\lib\x64\"));
 
             if (e.VlcLibDirectory.Exists) return;
 
