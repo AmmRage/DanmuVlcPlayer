@@ -15,19 +15,19 @@ namespace VlcDemo
         {
             InitializeComponent();
             this.Opacity = 0.5;
+
+            //this.Controls.Clear();
         }
 
         public void AddVlcPlay()
         {
-            mfplayer = new MfPlayer();
-            mfplayer.Attach(this.panelDisplay);
-
+            this.mfplayer = new MfPlayer();
+            this.mfplayer.Attach(this.panelDisplay);
         }
 
         private void FormMf_Shown(object sender, EventArgs e)
         {
             AddVlcPlay();
-
         }
         private void SetPlayListIndex(int movement)
         {
@@ -60,6 +60,7 @@ namespace VlcDemo
             }
             catch (Exception ex)
             {
+                MessageBox.Show(ex.ToString());
             }
             
         }

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Linq;
 
 using SharpDX.Direct3D;
 using SharpDX.Direct3D11;
@@ -16,6 +18,7 @@ using SharpDX.Windows;
 using Resource = SharpDX.Direct3D11.Resource;
 using SharpDX.Direct2D1;
 using SharpDX.DirectWrite;
+using Format = SharpDX.DXGI.Format;
 using PixelFormat = SharpDX.Direct2D1.PixelFormat;
 
 namespace VlcDemo
@@ -23,6 +26,8 @@ namespace VlcDemo
     public class MfPlayer
     {
         #region attributes
+
+        private readonly IList<string> SupportedFormatsExtensions;
 
         /// <summary>
         /// The event raised when MediaEngine is ready to play the music.
@@ -72,10 +77,26 @@ namespace VlcDemo
 
         #endregion
 
+        #region ctor & dector
         public MfPlayer()
         {
             this.EventReadyToPlay = new ManualResetEvent(false);
+            this.SupportedFormatsExtensions = @".3g2, .3gp, .3gp2, .3gpp, .asf, .wma, .wmv, .aac, .adts, .avi, .mp3, .m4a, .m4v, .mov, .mp4, .sami, .smi, .wav"
+                .Split(',').Select(e => e.Trim()).ToList();
         }
+        ~MfPlayer()
+        {
+            try
+            {
+                this.mediaEngine.Shutdown();
+            }
+            catch
+            {
+            }
+            this._swapChain.Dispose();
+            this._device.Dispose();
+        }
+        #endregion 
 
         #region private methods
         /// <summary>
@@ -152,14 +173,29 @@ namespace VlcDemo
 
             return new SwapChain(factory, dxdevice, sd);
         }
+
+        private ByteStream GetMediaByteStream(string file)
+        {
+            var extension = Path.GetExtension(file);
+            if (this.SupportedFormatsExtensions.Any(f => f.Equals(extension, StringComparison.OrdinalIgnoreCase)))
+            {
+                // Opens the file
+                var fileStream = File.Open(file, FileMode.Open);
+                // Create a ByteStream object from it
+                return new ByteStream(fileStream);
+            }
+            throw new Exception("Unsupported format");
+        }
+
         #endregion
 
         /// <summary>
         /// Attach player to a form
         /// </summary>
-        public void Attach(Control renderForm)
+        public void Attach(Control renderTarget)
         {
-            this.playerForm = renderForm;
+            //this.playerForm = new RenderForm();
+            this.playerForm = renderTarget;
             // Initialize MediaFoundation
             MediaManager.Startup();
             //text
@@ -170,7 +206,7 @@ namespace VlcDemo
                 ParagraphAlignment = ParagraphAlignment.Center
             };
             //SolidColorBrush SceneColorBrush = new SolidColorBrush(renderTarget2D, SharpDX.Color.Red);
-            var clientRectangle = new RectangleF(0, 0, renderForm.Width, renderForm.Height);
+            var clientRectangle = new RectangleF(0, 0, renderTarget.Width, renderTarget.Height);
 
             //play
             this._device = CreateDeviceForVideo(out this._dxgiManager);
@@ -190,16 +226,13 @@ namespace VlcDemo
             this._mediaEngineEx = this.mediaEngine.QueryInterface<MediaEngineEx>();
             
             //Create our swapchain
-            this._swapChain = CreateSwapChain(this._device, renderForm.Handle);
+            this._swapChain = CreateSwapChain(this._device, renderTarget.Handle);
 
             //Get DXGI surface to be used by our media engine
             var texture = Resource.FromSwapChain<Texture2D>(this._swapChain, 0);
             this.surface = texture.QueryInterface<Surface>();
 
-            //Get our video size
-            this.mediaEngine.GetNativeVideoSize(out this.w, out this.h);
-            // Play the music
-            this._mediaEngineEx.Play();
+
 
             var properties = new RenderTargetProperties()
             {
@@ -219,32 +252,46 @@ namespace VlcDemo
         public void Play(string file)
         {
             Task.Factory.StartNew(() =>
-            { 
-                
-                // Opens the file
-                var fileStream = File.Open(file, FileMode.Open);
-                // Create a ByteStream object from it
-                var stream = new ByteStream(fileStream);
+            {
+                var stream = GetMediaByteStream(file);
                 // Creates an URL to the file
                 var url = new Uri(file, UriKind.RelativeOrAbsolute);
                 // Set the source stream
-                this._mediaEngineEx.SetSourceFromByteStream(stream, url.AbsoluteUri);
-                // Wait for MediaEngine to be ready
-                if (!this.EventReadyToPlay.WaitOne(1000))
+                this._mediaEngineEx.SetSourceFromByteStream(stream, url.AbsoluteUri);                
+                try
                 {
-                    Console.WriteLine("Unexpected error: Unable to play this file");
-                }
-                RenderLoop.Run(this.playerForm, () =>
-                {
-                    if (this.mediaEngine.OnVideoStreamTick(out this.ts))
+                    // Wait for MediaEngine to be ready
+                    if (!this.EventReadyToPlay.WaitOne(1000))
                     {
-                        this.mediaEngine.TransferVideoFrame(this.surface, null, new RawRectangle(0, 0, this.w, this.h), null);
+                        Console.WriteLine("Unexpected error: Unable to play this file");
                     }
-                    this.target.BeginDraw();
-                    this.target.DrawTextLayout(new Vector2(0, 0), this.textLayout, this.brush, DrawTextOptions.None);
-                    this.target.EndDraw();
-                    this._swapChain.Present(1, PresentFlags.UseDuration);
-                });
+                    //Get our video size
+                    this.mediaEngine.GetNativeVideoSize(out this.w, out this.h);
+                    // Play
+                    this._mediaEngineEx.Play();
+                    var dstRect = new RawRectangle(0, 0, this.w, this.h);
+                    var origVector = new Vector2(0, 0);                   
+
+                    using (var renderLoop = new RenderLoop(this.playerForm) { UseApplicationDoEvents = false })
+                    {
+                        while (true)
+                        {
+                            if (this.mediaEngine.OnVideoStreamTick(out this.ts))
+                            {
+                                this.mediaEngine.TransferVideoFrame(this.surface, null, dstRect, null);
+                            }
+                            this.target.BeginDraw();
+                            
+                            this.target.DrawTextLayout(origVector, this.textLayout, this.brush, DrawTextOptions.None);
+                            this.target.EndDraw();
+                            this._swapChain.Present(1, PresentFlags.UseDuration);
+                        }
+                    }
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show(ex.ToString());
+                }
             });
         }
 
@@ -257,16 +304,10 @@ namespace VlcDemo
         }
 
         public bool IsPlaying { get; private set; }
+
         public float Position {
             get { return (float) this._mediaEngineEx.CurrentTime; }
             set { this._mediaEngineEx.SetCurrentTimeEx(value, MediaEngineSeekMode.Normal); }
-        }
-
-        ~MfPlayer()
-        {
-            this.mediaEngine.Shutdown();
-            this._swapChain.Dispose();
-            this._device.Dispose();
         }
 
         public void Stop()

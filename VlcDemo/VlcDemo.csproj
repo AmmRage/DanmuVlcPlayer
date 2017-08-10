@@ -113,6 +113,7 @@
       <DependentUpon>FormMf.cs</DependentUpon>
     </Compile>
     <Compile Include="Mf\MfPlayer.cs" />
+    <Compile Include="Mf\SimplePlayerDemo.cs" />
     <Compile Include="Vlc\Danmu\DanmuItem.cs" />
     <Compile Include="Vlc\Danmu\FormDanmu.cs">
       <SubType>Form</SubType>

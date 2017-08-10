@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using VlcDemo.Mf;
 
 namespace VlcDemo
 {
@@ -17,6 +18,7 @@ namespace VlcDemo
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             var masterForm = new FormMf();
+            masterForm.Size = new System.Drawing.Size(600, 480);
             Application.Run(masterForm);
         }
     }
