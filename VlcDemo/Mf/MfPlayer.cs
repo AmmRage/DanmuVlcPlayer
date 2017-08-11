@@ -75,6 +75,7 @@ namespace VlcDemo
 
         private int w, h;
 
+        private TextFormat textFormat;
         #endregion
 
         #region ctor & dector
@@ -88,7 +89,8 @@ namespace VlcDemo
         {
             try
             {
-                this.mediaEngine.Shutdown();
+                if(this.mediaEngine.NativePointer != (IntPtr)0)
+                    this.mediaEngine.Shutdown();
             }
             catch
             {
@@ -200,10 +202,11 @@ namespace VlcDemo
             MediaManager.Startup();
             //text
             var factoryDWrite = new SharpDX.DirectWrite.Factory();
-            var textFormat = new TextFormat(factoryDWrite, "consolas", 48)
+            textFormat = new TextFormat(factoryDWrite, "consolas", 14)
             {
                 TextAlignment = TextAlignment.Center,
-                ParagraphAlignment = ParagraphAlignment.Center
+                ParagraphAlignment = ParagraphAlignment.Center,
+                WordWrapping = WordWrapping.NoWrap,                                
             };
             //SolidColorBrush SceneColorBrush = new SolidColorBrush(renderTarget2D, SharpDX.Color.Red);
             var clientRectangle = new RectangleF(0, 0, renderTarget.Width, renderTarget.Height);
@@ -219,7 +222,7 @@ namespace VlcDemo
                 DxgiManager = this._dxgiManager
             };
             // Creates MediaEngine for AudioOnly 
-            this.mediaEngine = new MediaEngine(mediaEngineFactory, attr, MediaEngineCreateFlags.None);
+            this.mediaEngine = new MediaEngine(mediaEngineFactory, attr);
             // Register our PlayBackEvent
             this.mediaEngine.PlaybackEvent += OnPlaybackCallback;
             // Query for MediaEngineEx interface
@@ -232,8 +235,6 @@ namespace VlcDemo
             var texture = Resource.FromSwapChain<Texture2D>(this._swapChain, 0);
             this.surface = texture.QueryInterface<Surface>();
 
-
-
             var properties = new RenderTargetProperties()
             {
                 PixelFormat = new PixelFormat(Format.B8G8R8A8_UNorm, SharpDX.Direct2D1.AlphaMode.Ignore),
@@ -244,8 +245,8 @@ namespace VlcDemo
             
             using (var fac = new SharpDX.DirectWrite.Factory())
             {
-                this.textLayout = new TextLayout(fac, "SharpDX D2D1 - DWrite", textFormat, clientRectangle.Width,
-                    clientRectangle.Height);
+                this.textLayout = new TextLayout(fac, "SharpDX D2D1 - DWrite", textFormat, 100,
+                    100);
             }
         }
 
@@ -270,19 +271,20 @@ namespace VlcDemo
                     // Play
                     this._mediaEngineEx.Play();
                     var dstRect = new RawRectangle(0, 0, this.w, this.h);
-                    var origVector = new Vector2(0, 0);                   
-
+                    var origVector = new Vector2(0, 0);
+                  
                     using (var renderLoop = new RenderLoop(this.playerForm) { UseApplicationDoEvents = false })
                     {
                         while (true)
                         {
                             if (this.mediaEngine.OnVideoStreamTick(out this.ts))
                             {
-                                this.mediaEngine.TransferVideoFrame(this.surface, null, dstRect, null);
+                                //this.mediaEngine.TransferVideoFrame(this.surface, null, dstRect, null);
                             }
                             this.target.BeginDraw();
-                            
-                            this.target.DrawTextLayout(origVector, this.textLayout, this.brush, DrawTextOptions.None);
+
+                            //this.target.DrawTextLayout(origVector, this.textLayout, this.brush, DrawTextOptions.None);
+                            this.target.DrawText("123456", textFormat, new RawRectangleF(0, 0, 100, 100), this.brush);
                             this.target.EndDraw();
                             this._swapChain.Present(1, PresentFlags.UseDuration);
                         }

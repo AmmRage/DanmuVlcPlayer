@@ -7,8 +7,8 @@
     <ProjectGuid>{273A5237-2B0B-48D3-BB0C-9C74CAC949F1}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>VlcDemo</RootNamespace>
-    <AssemblyName>VlcDemo</AssemblyName>
+    <RootNamespace>VlcDanmuPlayerForms</RootNamespace>
+    <AssemblyName>VlcDanmuPlayerForms</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -59,6 +59,9 @@
   <PropertyGroup>
     <ApplicationIcon>res\logo.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>VlcDemo.Program</StartupObject>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="SharpDX, Version=3.1.1.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.3.1.1\lib\net45\SharpDX.dll</HintPath>
@@ -106,6 +109,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DanmuBox.cs" />
     <Compile Include="Mf\FormMf.cs">
       <SubType>Form</SubType>
     </Compile>

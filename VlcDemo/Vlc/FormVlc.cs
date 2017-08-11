@@ -14,7 +14,7 @@ using System.Windows.Forms;
 using Vlc.DotNet.Core.Interops.Signatures;
 using Vlc.DotNet.Forms;
 using VlcDemo.Danmu;
-using VlcDemo.Properties;
+using VlcDanmuPlayerForms.Properties;
 
 namespace VlcDemo
 {

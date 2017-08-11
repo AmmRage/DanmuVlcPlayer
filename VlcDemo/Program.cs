@@ -17,8 +17,11 @@ namespace VlcDemo
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            var masterForm = new FormMf();
-            masterForm.Size = new System.Drawing.Size(600, 480);
+            var masterForm = new FormMf
+            {
+                Size = new System.Drawing.Size(600, 480),
+                Text = "Simple",
+            };
             Application.Run(masterForm);
         }
     }
