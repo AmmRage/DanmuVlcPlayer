@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -15,7 +17,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using VlcDanmuPlayerWpf.Danmu;
+using VlcDanmuPlayerWpf.Properties;
+using Path = System.IO.Path;
 
 namespace VlcDanmuPlayerWpf
 {
@@ -24,6 +29,8 @@ namespace VlcDanmuPlayerWpf
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region attributes & ctor
+
         private DanmuBox danmu;
 
         private string fontName;
@@ -31,26 +38,66 @@ namespace VlcDanmuPlayerWpf
         private double fontSize;
 
         private double width;
+
         private double height;
 
         DispatcherTimer dispatcherTimer = new DispatcherTimer();
+
         public MainWindow()
         {
             InitializeComponent();
+            
+            this.Left = Settings.Default.Location.X;
+            this.Top = Settings.Default.Location.Y;
 
             this.dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
             this.dispatcherTimer.Interval = new TimeSpan(0, 0, 0,0, 100);
 
             this.danmu = new DanmuBox();
             this.fontName = ("Arial");
-            this.fontSize = 14;
+            this.fontSize = 14;          
+
             this.Player.SizeChanged += Player_SizeChanged;
             this.width = this.Player.ActualWidth;
             this.height = this.Player.ActualHeight;
 
+            this.danmu.SetTextFormatPara(this.fontName, this.fontSize);
+
+            this.Player.TimeChanged += Player_TimeChanged;
+        }
+        #endregion 
+
+        protected override void OnClosed(EventArgs e)
+        {
+            this.Player.Stop();
+            while (this.Player.State != Meta.Vlc.Interop.Media.MediaState.Stopped)
+            {
+                Thread.Sleep(10);
+            }
+            this.Player.Dispose();
+            base.OnClosed(e);
         }
 
-        void Player_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void ButtonOpen_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ButtonStop_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ButtonPlay_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void ButtonClose_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void Player_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             this.width = this.Player.ActualWidth;
             this.height = this.Player.ActualHeight;
@@ -64,7 +111,7 @@ namespace VlcDanmuPlayerWpf
                 var block = new TextBlock
                 {
                     Text = d.Content,
-                    Foreground = Brushes.Gray,
+                    Foreground = Brushes.LightGray,
                     FontSize = this.fontSize,
                 };
                 Canvas.SetLeft(block, d.LocationX * this.width);
@@ -73,46 +120,21 @@ namespace VlcDanmuPlayerWpf
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            this.Player.LoadMedia(@"");
-
-            this.Player.TimeChanged += Player_TimeChanged;
-            this.Player.Play();
-            //DrawCanvas();
-            this.danmu.SetTextFormatPara(this.fontName, this.fontSize);
-            this.danmu.LoadDanmuFile(@"");
-            this.dispatcherTimer.Start();
-        }
-
         private void Player_TimeChanged(object sender, EventArgs e)
         {
             this.danmu.UpdateDanmnTexts(this.Player.Time.TotalMilliseconds / 100);
         }
 
-        private void DrawCanvas()
-        {         
-            this.CanvasDanmu.Children.Clear();
-            TextBlock textBlock = new TextBlock
-            {
-                Text = "asdfalsdjfk",
-                Foreground = Brushes.Cyan,
-                FontSize = 32,
-            };
-            Canvas.SetLeft(textBlock, 100);
-            Canvas.SetTop(textBlock, 100);
-            this.CanvasDanmu.Children.Add(textBlock);
+        private void LabelTitle_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                this.DragMove();
         }
 
-        protected override void OnClosed(EventArgs e)
-        {
-            this.Player.Stop();
-            while (this.Player.State != Meta.Vlc.Interop.Media.MediaState.Stopped)
-            {
-                Thread.Sleep(10);
-            }
-            this.Player.Dispose();
-            base.OnClosed(e);
+        private void VlcPlayerMainWindow_LocationChanged(object sender, EventArgs e)
+        {          
+            Settings.Default.Location = new System.Drawing.Point((int) this.Left, (int) this.Top);
+            Settings.Default.Save();
         }
     }
 }

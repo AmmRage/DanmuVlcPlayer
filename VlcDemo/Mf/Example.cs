@@ -19,7 +19,6 @@
 // THE SOFTWARE.
 
 using System;
-using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 using SharpDX.Direct3D;
@@ -28,7 +27,6 @@ using SharpDX.DXGI;
 using SharpDX.MediaFoundation;
 using SharpDX.Windows;
 using DXDevice = SharpDX.Direct3D11.Device;
-using Resource = SharpDX.Direct3D11.Resource;
 
 namespace VlcDemo.Mf
 {
@@ -38,9 +36,9 @@ namespace VlcDemo.Mf
     /// Also please note that this sample might not work on NVidia Cards (due to video engine broken on many drivers),
     /// This has been tested and working on Intel and ATI.
     /// </summary>
-    public class SimplePlayerDemo
-
+    public class Example
     {
+        #region
         /// <summary>
         /// The event raised when MediaEngine is ready to play the music.
         /// </summary>
@@ -71,19 +69,27 @@ namespace VlcDemo.Mf
         /// </summary>
         private static DXGIDeviceManager dxgiManager;
 
+        #endregion
+
         /// <summary>
         /// Defines the entry point of the application.
         /// </summary>
         /// <param name="args">The args.</param>
-        public static void Run(string file)
+        
+        public static void Run()
         {
+            // Select a File to play
+            var openFileDialog = new OpenFileDialog { Title = "Select a file",};
+            var result = openFileDialog.ShowDialog();
+            if (result == DialogResult.Cancel)
+            {
+                return;
+            }
+
             // Initialize MediaFoundation
             MediaManager.Startup();
 
-            var renderForm = new RenderForm()
-            {
-                Opacity = 0.4,
-            };
+            var renderForm = new SharpDX.Windows.RenderForm();
 
             device = CreateDeviceForVideo(out dxgiManager);
 
@@ -91,11 +97,9 @@ namespace VlcDemo.Mf
             var mediaEngineFactory = new MediaEngineClassFactory();
 
             //Assign our dxgi manager, and set format to bgra
-            var attr = new MediaEngineAttributes
-            {
-                VideoOutputFormat = (int) Format.B8G8R8A8_UNorm,
-                DxgiManager = dxgiManager
-            };
+            MediaEngineAttributes attr = new MediaEngineAttributes();
+            attr.VideoOutputFormat = (int)SharpDX.DXGI.Format.B8G8R8A8_UNorm;
+            attr.DxgiManager = dxgiManager;
 
             // Creates MediaEngine for AudioOnly 
             var mediaEngine = new MediaEngine(mediaEngineFactory, attr, MediaEngineCreateFlags.None);
@@ -107,13 +111,13 @@ namespace VlcDemo.Mf
             mediaEngineEx = mediaEngine.QueryInterface<MediaEngineEx>();
 
             // Opens the file
-            var fileStream = File.Open(file, FileMode.Open);
+            var fileStream = openFileDialog.OpenFile();
 
             // Create a ByteStream object from it
             var stream = new ByteStream(fileStream);
 
             // Creates an URL to the file
-            var url = new Uri(file, UriKind.RelativeOrAbsolute);
+            var url = new Uri(openFileDialog.FileName, UriKind.RelativeOrAbsolute);
 
             // Set the source stream
             mediaEngineEx.SetSourceFromByteStream(stream, url.AbsoluteUri);
@@ -128,8 +132,8 @@ namespace VlcDemo.Mf
             swapChain = CreateSwapChain(device, renderForm.Handle);
 
             //Get DXGI surface to be used by our media engine
-            var texture = Resource.FromSwapChain<Texture2D>(swapChain, 0);
-            var surface = texture.QueryInterface<Surface>();
+            var texture = Texture2D.FromSwapChain<Texture2D>(swapChain, 0);
+            var surface = texture.QueryInterface<SharpDX.DXGI.Surface>();
 
             //Get our video size
             int w, h;
@@ -148,7 +152,7 @@ namespace VlcDemo.Mf
                     mediaEngine.TransferVideoFrame(surface, null, new SharpDX.Rectangle(0, 0, w, h), null);
                 }
 
-                swapChain.Present(1, PresentFlags.None);
+                swapChain.Present(1, SharpDX.DXGI.PresentFlags.None);
             });
 
             mediaEngine.Shutdown();
@@ -187,11 +191,10 @@ namespace VlcDemo.Mf
         private static DXDevice CreateDeviceForVideo(out DXGIDeviceManager manager)
         {
             //Device need bgra and video support
-            var device = new DXDevice(DriverType.Hardware,
-                DeviceCreationFlags.BgraSupport | DeviceCreationFlags.VideoSupport);
+            var device = new DXDevice(SharpDX.Direct3D.DriverType.Hardware, DeviceCreationFlags.BgraSupport | DeviceCreationFlags.VideoSupport);
 
             //Add multi thread protection on device
-            var mt = device.QueryInterface<DeviceMultithread>();
+            DeviceMultithread mt = device.QueryInterface<DeviceMultithread>();
             mt.SetMultithreadProtected(true);
 
             //Reset device
@@ -216,7 +219,7 @@ namespace VlcDemo.Mf
 
             /*To be allowed to be used as video, texture must be of the same format (eg: bgra), and needs to be bindable are render target.
              * you do not need to create render target view, only the flag*/
-            var sd = new SwapChainDescription()
+            SwapChainDescription sd = new SwapChainDescription()
             {
                 BufferCount = 1,
                 ModeDescription = new ModeDescription(0, 0, new Rational(60, 1), Format.B8G8R8A8_UNorm),
