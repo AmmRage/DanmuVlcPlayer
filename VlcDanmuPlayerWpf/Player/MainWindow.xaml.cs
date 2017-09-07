@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -43,6 +44,37 @@ namespace VlcDanmuPlayerWpf
 
         DispatcherTimer dispatcherTimer = new DispatcherTimer();
 
+        #region bingdings
+        private int playProgress = 0;
+        public int PlayProgress
+        {
+            get { return playProgress; }
+            set
+            {
+                playProgress = value;
+                RaisePropertyChanged("PlayProgress");
+                Debug.WriteLine("value: " + this.progressBarPlay.Value);
+            }
+        }
+
+        private int mediaLength;
+        public int MediaLength {
+            get { return mediaLength; }
+            set
+            {
+                mediaLength = value;
+                RaisePropertyChanged("MediaLength");
+            }
+        }
+
+        private void RaisePropertyChanged(string propName)
+        {
+            if (PropertyChanged != null)
+                PropertyChanged(this, new PropertyChangedEventArgs(propName));
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
+        #endregion
+
         public MainWindow()
         {
             InitializeComponent();
@@ -62,11 +94,11 @@ namespace VlcDanmuPlayerWpf
             this.height = this.Player.ActualHeight;
 
             this.danmu.SetTextFormatPara(this.fontName, this.fontSize);
-
-            this.Player.TimeChanged += Player_TimeChanged;
+            InitPlayerEventHandlers();
         }
         #endregion 
 
+        #region events
         protected override void OnClosed(EventArgs e)
         {
             this.Player.Stop();
@@ -77,19 +109,29 @@ namespace VlcDanmuPlayerWpf
             this.Player.Dispose();
             base.OnClosed(e);
         }
-
+        #endregion
+        
         private void ButtonOpen_Click(object sender, RoutedEventArgs e)
         {
-
+            var ofd = new OpenFileDialog()
+            {
+                RestoreDirectory = true,
+                Title = "Open a file",
+                Multiselect = false,
+            };
+            if (ofd.ShowDialog() != true) 
+                return;
+            Play(ofd.FileName);
         }
 
         private void ButtonStop_Click(object sender, RoutedEventArgs e)
         {
-
+            Stop();
         }
 
         private void ButtonPlay_Click(object sender, RoutedEventArgs e)
         {
+            
         }
 
         private void ButtonClose_Click(object sender, RoutedEventArgs e)
@@ -102,7 +144,11 @@ namespace VlcDanmuPlayerWpf
             this.width = this.Player.ActualWidth;
             this.height = this.Player.ActualHeight;
         }
-
+        /// <summary>
+        /// update danmu location
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             this.CanvasDanmu.Children.Clear();
@@ -118,11 +164,6 @@ namespace VlcDanmuPlayerWpf
                 Canvas.SetTop(block, d.LocationY * this.height);
                 this.CanvasDanmu.Children.Add(block);
             }
-        }
-
-        private void Player_TimeChanged(object sender, EventArgs e)
-        {
-            this.danmu.UpdateDanmnTexts(this.Player.Time.TotalMilliseconds / 100);
         }
 
         private void LabelTitle_MouseDown(object sender, MouseButtonEventArgs e)

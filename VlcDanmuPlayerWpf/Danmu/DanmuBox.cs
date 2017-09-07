@@ -16,7 +16,7 @@ namespace VlcDanmuPlayerWpf.Danmu
 {
     public class DanmuBox 
     {
-        #region attributes & ctor        
+        #region attributes & ctor
         private Regex reg = new Regex(@"p=""(?<time>\d+\.\d*)[^>]+\>(?<content>[^<]*)\</d\>", RegexOptions.IgnorePatternWhitespace);
 
         private Dictionary<int, string[]> _danmuDict;
@@ -39,8 +39,22 @@ namespace VlcDanmuPlayerWpf.Danmu
         }
         #endregion
 
+        public void Reset()
+        {
+            try
+            {
+                timer.Enabled = false;
+                _danmuDict.Clear();
+                DanmuShowing = new ConcurrentBag<DanmuItem>();
+            }
+            catch
+            {
+            }
+        }
+
         public void LoadDanmuFile(string danmufile)
         {
+            Reset();
             this._danmuDict = File.ReadLines(danmufile).Select(l =>
                 {
                     var m = this.reg.Match(l);
@@ -79,23 +93,6 @@ namespace VlcDanmuPlayerWpf.Danmu
                 });
             }
         }
-
-        //public TextBlock[] GetCurrentTextBlocks()
-        //{
-        //    return this.DanmuShowing.Select(d =>
-        //    {
-        //        var block = new TextBlock
-        //        {
-        //            Text = d.Content,
-        //            Foreground = Brushes.Gray,
-        //            FontSize = this.fontSize,
-        //            FontFamily = this.fontFamily,
-        //        };
-        //        Canvas.SetLeft(block, d.LocationX);
-        //        Canvas.SetTop(block, d.LocationY);
-        //        return block;
-        //    }).ToArray();
-        //}
 
         private void RollDanmu(object obj, ElapsedEventArgs e)
         {

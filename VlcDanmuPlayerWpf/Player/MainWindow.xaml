@@ -28,17 +28,28 @@
                    Foreground="#FFF9F9F9" FontWeight="Bold" MouseDown="LabelTitle_MouseDown" Height="23" />
         </Grid>
 
-        <ListBox x:Name="ListBoxPlayList" Margin="0,27,0,30" Width="100" Background="Black" Foreground="#FFBFAAAA" 
+        <ListBox x:Name="ListBoxPlayList" Margin="0,27,0,30" Width="100" Background="Black" Foreground="#FFBFAAAA"
                  HorizontalAlignment="Left" BorderBrush="{x:Null}" BorderThickness="0" FontSize="16" />
 
-        <Canvas Name="CanvasDanmu" Panel.ZIndex="99" Background="Transparent" Opacity="0.8" Margin="102,27,0,30" ClipToBounds="True" />
+        <Canvas Name="CanvasDanmu" Panel.ZIndex="99" Background="Transparent" Opacity="0.8" Margin="102,27,0,30"
+                ClipToBounds="True" />
 
-        <wpf:VlcPlayer x:Name="Player" VlcOption="{StaticResource VlcOptions}" LibVlcPath="..\..\libvlc" EndBehavior="Nothing" Margin="102,27,0,30" Background="Black" Panel.ZIndex="98" />
+        <wpf:VlcPlayer x:Name="Player" VlcOption="{StaticResource VlcOptions}" LibVlcPath="..\..\libvlc"
+                       EndBehavior="Nothing" Margin="102,27,0,30" Background="Black" Panel.ZIndex="98" />
+        
+        
+        <ProgressBar x:Name="progressBarPlay" Height="5" Margin="102,0,0,30" Opacity="0.8" Foreground="#FF90D8D8" Panel.ZIndex="98" 
+                     Value="{Binding Path=PlayProgress, Mode=TwoWay, UpdateSourceTrigger= PropertyChanged}"
+                     Background="Black" VerticalAlignment="Bottom" 
+                     Maximum="{Binding Path=MediaLength,  Mode=TwoWay, UpdateSourceTrigger= PropertyChanged}" BorderThickness="0,1"/>
 
-        <UniformGrid x:Name="UniformGridButtons" VerticalAlignment="Bottom" Panel.ZIndex="101" Height="30" Rows="1" >
-            <Button x:Name="ButtonStart" Content="Open" Margin="0,0,0,0"  Click="ButtonOpen_Click" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
-            <Button x:Name="ButtonPlay" Content="Play" Margin="0,0,0,0" Click="ButtonPlay_Click"  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
-            <Button x:Name="ButtonStop" Content="Stop" Margin="0,0,0,0"  Click="ButtonStop_Click" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+        <UniformGrid x:Name="UniformGridButtons" VerticalAlignment="Bottom" Panel.ZIndex="101" Height="30" Rows="1">
+            <Button x:Name="ButtonStart" Content="Open" Margin="0,0,0,0" Click="ButtonOpen_Click"
+                    VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Button x:Name="ButtonPlay" Content="Play" Margin="0,0,0,0" Click="ButtonPlay_Click"
+                    VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
+            <Button x:Name="ButtonStop" Content="Stop" Margin="0,0,0,0" Click="ButtonStop_Click"
+                    VerticalContentAlignment="Center" HorizontalContentAlignment="Center" />
         </UniformGrid>
     </Grid>
 </Window>
