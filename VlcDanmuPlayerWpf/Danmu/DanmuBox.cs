@@ -44,7 +44,8 @@ namespace VlcDanmuPlayerWpf.Danmu
             try
             {
                 timer.Enabled = false;
-                _danmuDict.Clear();
+                if (_danmuDict != null)
+                    _danmuDict.Clear();
                 DanmuShowing = new ConcurrentBag<DanmuItem>();
             }
             catch
@@ -55,6 +56,8 @@ namespace VlcDanmuPlayerWpf.Danmu
         public void LoadDanmuFile(string danmufile)
         {
             Reset();
+            if (!File.Exists(danmufile))
+                return;
             this._danmuDict = File.ReadLines(danmufile).Select(l =>
                 {
                     var m = this.reg.Match(l);
@@ -78,6 +81,7 @@ namespace VlcDanmuPlayerWpf.Danmu
         /// <param name="playTime">count by 100ms</param>
         public void UpdateDanmnTexts(double playTime)
         {
+            if (this._danmuDict == null || this._danmuDict.Count == 0) return;
             int time = (int)(playTime);
             if (!this._danmuDict.ContainsKey(time))
                 return;

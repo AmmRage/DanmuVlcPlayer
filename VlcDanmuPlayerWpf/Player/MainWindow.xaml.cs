@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -45,34 +46,71 @@ namespace VlcDanmuPlayerWpf
         DispatcherTimer dispatcherTimer = new DispatcherTimer();
 
         #region bingdings
-        private int playProgress = 0;
+
         public int PlayProgress
         {
-            get { return playProgress; }
+            get { return (int) this.GetValue(PlayProgressProperty); }
             set
             {
-                playProgress = value;
-                RaisePropertyChanged("PlayProgress");
-                Debug.WriteLine("value: " + this.progressBarPlay.Value);
+                this.SetValue(PlayProgressProperty, value);
             }
         }
 
-        private int mediaLength;
-        public int MediaLength {
-            get { return mediaLength; }
-            set
-            {
-                mediaLength = value;
-                RaisePropertyChanged("MediaLength");
-            }
-        }
-
-        private void RaisePropertyChanged(string propName)
+        public int MediaLength
         {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(propName));
+            get
+            {
+                return (int)this.GetValue(MediaLengthProperty);                
+                var ret = (int) this.GetValue(MediaLengthProperty);
+                return ret;
+            }
+            set
+            {
+                this.SetValue(MediaLengthProperty, value);
+            }
         }
-        public event PropertyChangedEventHandler PropertyChanged;
+
+        public static readonly DependencyProperty PlayProgressProperty =
+            DependencyProperty.Register("PlayProgress", typeof(int), typeof(MainWindow), new UIPropertyMetadata(0));
+
+        public static readonly DependencyProperty MediaLengthProperty =
+            DependencyProperty.Register("MediaLength", typeof(int), typeof(MainWindow), new UIPropertyMetadata(0));
+
+        //public string CompanyName
+        //{
+        //    get => (string) this.GetValue(CompanyNameProperty);
+        //    set => this.SetValue(CompanyNameProperty, value);
+        //}
+
+        //private int playProgress = 0;
+
+        //public int PlayProgress
+        //{
+        //    get { return playProgress; }
+        //    set
+        //    {
+        //        playProgress = value;
+        //        //RaisePropertyChanged("PlayProgress");
+        //        Debug.WriteLine("value: " + this.progressBarPlay.Value);
+        //    }
+        //}
+
+        //private int mediaLength;
+        //public int MediaLength {
+        //    get { return mediaLength; }
+        //    set
+        //    {
+        //        mediaLength = value;
+        //        //RaisePropertyChanged("MediaLength");
+        //    }
+        //}
+
+        //private void RaisePropertyChanged(string propName)
+        //{
+        //    if (PropertyChanged != null)
+        //        PropertyChanged(this, new PropertyChangedEventArgs(propName));
+        //}
+        //public event PropertyChangedEventHandler PropertyChanged;
         #endregion
 
         public MainWindow()
@@ -95,7 +133,11 @@ namespace VlcDanmuPlayerWpf
 
             this.danmu.SetTextFormatPara(this.fontName, this.fontSize);
             InitPlayerEventHandlers();
+
+            PlayProgress = 0;
+            MediaLength = 100;
         }
+
         #endregion 
 
         #region events
@@ -131,7 +173,6 @@ namespace VlcDanmuPlayerWpf
 
         private void ButtonPlay_Click(object sender, RoutedEventArgs e)
         {
-            
         }
 
         private void ButtonClose_Click(object sender, RoutedEventArgs e)
@@ -176,6 +217,21 @@ namespace VlcDanmuPlayerWpf
         {          
             Settings.Default.Location = new System.Drawing.Point((int) this.Left, (int) this.Top);
             Settings.Default.Save();
+        }
+        
+        private void progressSliderPlay_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Seek(this.progressSliderPlay.Value);
+        }
+
+        private void progressSliderPlay_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            allowSeek = true;
+        }
+
+        private void progressSliderPlay_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            allowSeek = false;
         }
     }
 }
