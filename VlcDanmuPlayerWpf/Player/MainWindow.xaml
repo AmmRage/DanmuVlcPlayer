@@ -35,19 +35,15 @@
         <Canvas Name="CanvasDanmu" Panel.ZIndex="99" Background="Transparent" Opacity="0.8" Margin="102,27,0,50"
                 ClipToBounds="True" />
 
-        <wpf:VlcPlayer x:Name="Player" VlcOption="{StaticResource VlcOptions}" LibVlcPath="..\..\libvlc"
-                       EndBehavior="Nothing" Margin="102,27,0,50" Background="Black" Panel.ZIndex="98" />        
-        
-        <!--<ProgressBar x:Name="progressBarPlay" Height="10" Margin="102,0,0,30" Opacity="0.8" Foreground="Cyan" Panel.ZIndex="98" 
-                     DataContext="{Binding ElementName=VlcPlayerMainWindow}" 
-                     Value="{Binding Path=PlayProgress}"
-                     Background="Black" VerticalAlignment="Bottom" 
-                     Maximum="{Binding Path=MediaLength}" BorderThickness="0,1"/>-->
+            <wpf:VlcPlayer x:Name="Player" VlcOption="{StaticResource VlcOptions}" LibVlcPath="..\..\libvlc"
+                           EndBehavior="Nothing" Margin="102,27,0,50" Background="Black" Panel.ZIndex="98" />
 
-        <Slider x:Name="progressSliderPlay" Height="20" Margin="102,0,0,30" Panel.ZIndex="99" Opacity="0.8"
-                Foreground="Cyan" Background="Black" VerticalAlignment="Bottom" BorderThickness="0,1"
-                DataContext="{Binding ElementName=VlcPlayerMainWindow}" Value="{Binding Path=PlayProgress}"
-                Maximum="{Binding Path=MediaLength}" ValueChanged="progressSliderPlay_ValueChanged" MouseDown="progressSliderPlay_MouseDown" MouseUp="progressSliderPlay_MouseUp" />
+            <Slider x:Name="progressSliderPlay" Height="20" Margin="102,0,0,30" Panel.ZIndex="99" Opacity="0.8"
+                    Foreground="Cyan" Background="Black" VerticalAlignment="Bottom" BorderThickness="0,1"
+                    DataContext="{Binding ElementName=VlcPlayerMainWindow}" Value="{Binding Path=PlayProgress}"
+                    Maximum="{Binding Path=MediaLength}" ValueChanged="progressSliderPlay_ValueChanged"
+                    MouseDown="progressSliderPlay_MouseDown" MouseUp="progressSliderPlay_MouseUp" />
+        
         
         <UniformGrid x:Name="UniformGridButtons" VerticalAlignment="Bottom" Panel.ZIndex="101" Height="30" Rows="1">
             <Button x:Name="ButtonStart" Content="Open" Margin="0,0,0,0" Click="ButtonOpen_Click"
