@@ -3,12 +3,12 @@
 from flask import *
 
 
-app = Flask(__name__)
+app = Flask('my vi host')
 
 @app.route("/")
 def index():
-    return "Hello World!"
-
+    # return "Hello World!"
+    return render_template('play.html')
 
 @app.route("/play/<resource>")
 def get_resource(resource):
@@ -21,4 +21,4 @@ def get_resource(resource):
 
 
 if __name__ == '__main__':
-    app.run('http://localhost', 10234)
+    app.run()

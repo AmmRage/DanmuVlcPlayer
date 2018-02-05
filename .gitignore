@@ -1,6 +1,7 @@
 # Build and Object Folders
 bin/
 obj/
+you_get/
 
 # Nuget packages directory
 packages/

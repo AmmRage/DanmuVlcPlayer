@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wpf="clr-namespace:Meta.Vlc.Wpf;assembly=Meta.Vlc.Wpf"
         xmlns:system="clr-namespace:System;assembly=mscorlib" Height="500" Width="600" Foreground="{x:Null}"
-        Background="{x:Null}" AllowsTransparency="True" WindowStyle="None" Opacity="0.99" Title="VLC"
+        Background="{x:Null}" AllowsTransparency="True" WindowStyle="None" Title="VLC"
         BorderBrush="#FF595252" BorderThickness="1" LocationChanged="VlcPlayerMainWindow_LocationChanged"
         ResizeMode="CanResizeWithGrip" Icon="pack://siteoforigin:,,,/Resources/media.ico"
         >
@@ -34,7 +34,8 @@
 
         <Canvas Name="CanvasDanmu" Panel.ZIndex="99" Background="Transparent" Opacity="0.8" Margin="102,27,0,50"
                 ClipToBounds="True" />
-
+        
+        <Grid Name="localFilePlayer">
             <wpf:VlcPlayer x:Name="Player" VlcOption="{StaticResource VlcOptions}" LibVlcPath="..\..\libvlc"
                            EndBehavior="Nothing" Margin="102,27,0,50" Background="Black" Panel.ZIndex="98" />
 
@@ -43,7 +44,8 @@
                     DataContext="{Binding ElementName=VlcPlayerMainWindow}" Value="{Binding Path=PlayProgress}"
                     Maximum="{Binding Path=MediaLength}" ValueChanged="progressSliderPlay_ValueChanged"
                     MouseDown="progressSliderPlay_MouseDown" MouseUp="progressSliderPlay_MouseUp" />
-        
+        </Grid>
+
         
         <UniformGrid x:Name="UniformGridButtons" VerticalAlignment="Bottom" Panel.ZIndex="101" Height="30" Rows="1">
             <Button x:Name="ButtonStart" Content="Open" Margin="0,0,0,0" Click="ButtonOpen_Click"

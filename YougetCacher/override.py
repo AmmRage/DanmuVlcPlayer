@@ -1,16 +1,22 @@
-# *-encoding: utf8 -*
-import time
-import you_get
 
-from urllib import request, parse, error
-import you_get.common as common
+import io
+import os
+import re
 import sys
+import time
+import json
 import socket
+import locale
+import logging
+import argparse
+from http import cookiejar
+from importlib import import_module
+from urllib import request, parse, error
 
-from override import url_save_overload
+from you_get.common import urlopen_with_retry, fake_headers, force, tr, url_size
 
 
-def url_save(
+def url_save_overload(
     url, filepath, bar, refer=None, is_part=False, faker=False,
     headers=None, timeout=None, **kwargs
 ):
@@ -19,15 +25,16 @@ def url_save(
     # the key must be 'Referer' for the hack here
     if refer is not None:
         tmp_headers['Referer'] = refer
-    file_size = common.url_size(url, faker=faker, headers=tmp_headers)
+    file_size = url_size(url, faker=faker, headers=tmp_headers)
 
-    if you_get.os.path.exists(filepath):
-        if not common.force and file_size == you_get.os.path.getsize(filepath):
+    if os.path.exists(filepath):
+        if not force and file_size == os.path.getsize(filepath):
             if not is_part:
                 if bar:
                     bar.done()
                 print(
-                    'Skipping {}: file already exists'.format(common.tr(you_get.os.path.basename(filepath))
+                    'Skipping {}: file already exists'.format(
+                        tr(os.path.basename(filepath))
                     )
                 )
             else:
@@ -38,26 +45,26 @@ def url_save(
             if not is_part:
                 if bar:
                     bar.done()
-                print('Overwriting %s' % common.tr(you_get.os.path.basename(filepath)), '...')
-    elif not you_get.os.path.exists(you_get.os.path.dirname(filepath)):
-        you_get.os.mkdir(you_get.os.path.dirname(filepath))
+                print('Overwriting %s' % tr(os.path.basename(filepath)), '...')
+    elif not os.path.exists(os.path.dirname(filepath)):
+        os.mkdir(os.path.dirname(filepath))
 
     temp_filepath = filepath + '.download' if file_size != float('inf') \
         else filepath
     received = 0
-    if not common.force:
+    if not force:
         open_mode = 'ab'
 
-        if you_get.os.path.exists(temp_filepath):
-            received += you_get.os.path.getsize(temp_filepath)
+        if os.path.exists(temp_filepath):
+            received += os.path.getsize(temp_filepath)
             if bar:
-                bar.update_received(you_get.os.path.getsize(temp_filepath))
+                bar.update_received(os.path.getsize(temp_filepath))
     else:
         open_mode = 'wb'
 
     if received < file_size:
         if faker:
-            tmp_headers = common.fake_headers
+            tmp_headers = fake_headers
         '''
         if parameter headers passed in, we have it copied as tmp_header
         elif headers:
@@ -71,11 +78,11 @@ def url_save(
             tmp_headers['Referer'] = refer
 
         if timeout:
-            response = common.urlopen_with_retry(
+            response = urlopen_with_retry(
                 request.Request(url, headers=tmp_headers), timeout=timeout
             )
         else:
-            response = common.urlopen_with_retry(
+            response = urlopen_with_retry(
                 request.Request(url, headers=tmp_headers)
             )
         try:
@@ -111,7 +118,7 @@ def url_save(
                         break
                     # Unexpected termination. Retry request
                     tmp_headers['Range'] = 'bytes=' + str(received) + '-'
-                    response = common.urlopen_with_retry(
+                    response = urlopen_with_retry(
                         request.Request(url, headers=tmp_headers)
                     )
                     continue
@@ -120,35 +127,11 @@ def url_save(
                 if bar:
                     bar.update_received(len(buffer))
 
-    assert received == you_get.os.path.getsize(temp_filepath), '%s == %s == %s' % (
-        received, you_get.os.path.getsize(temp_filepath), temp_filepath
+    assert received == os.path.getsize(temp_filepath), '%s == %s == %s' % (
+        received, os.path.getsize(temp_filepath), temp_filepath
     )
 
-    if you_get.os.access(filepath, you_get.os.W_OK):
+    if os.access(filepath, os.W_OK):
         # on Windows rename could fail if destination filepath exists
-        you_get.os.remove(filepath)
-    you_get.os.rename(temp_filepath, filepath)
-
-def main(**kwargs):
-    print(**kwargs)
-
-# https://www.bilibili.com/video/av18933496/
-
-
-if __name__ == '__main__':
-    url = sys.stdin.readline()
-
-    if len(sys.argv) < 3:
-        exit()
-
-    sys.argv.append(url)
-
-    you_get.common.url_save = url_save_overload
-
-    you_get.common.main()
-    print('done')
-
-
-
-
-
+        os.remove(filepath)
+    os.rename(temp_filepath, filepath)
