@@ -1,6 +1,8 @@
 # *-encoding: utf8 -*
 import os
-from flask import Flask, render_template, request, make_response
+
+import sys
+from flask import Flask, render_template, request, make_response, Response
 from werkzeug.routing import BaseConverter
 
 app = Flask('my vi host')
@@ -14,21 +16,30 @@ def index():
 
 @app.route("/play/<resource>/")
 def get_resource(resource):
-    print(str.format("if_range: {0}, range-start: {1}, range-end: {2}",
-                     str(request.if_range),
-                     str(request.range.ranges[0][0]),
-                     str(request.range.ranges[0][1])))
+    try:
+        print(str.format("if_range: {0}, range-start: {1}, range-end: {2}",
+                         str(request.if_range),
+                         str(request.range.ranges[0][0]),
+                         str(request.range.ranges[0][1])))
+        req_start = request.range.ranges[0][0]
+        req_end = request.range.ranges[0][1]
+    except:
+        pass
 
     if resource.endswith('.webm'):
         req_file = os.path.join('./', resource)
         if not os.path.isfile(req_file):
             return make_response('not found', 404)
-        with open(req_file, mode='rb') as f:
-            buf = f.read()
 
-        resp = make_response(request)
-        resp.headers['Accept-Ranges'] = 'bytes'
-        resp.headers['Content - Length'] = '146515'
+        if req_start == 0 and req_end is None:
+            resp = Response()
+            resp.content_length = os.path.getsize(req_file)
+            resp.accept_ranges = 'bytes'
+            return resp
+        else:
+            with open(req_file, mode='rb') as f:
+                buf = f.read()
+
         return buf
 
     else:
