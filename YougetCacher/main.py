@@ -11,8 +11,8 @@ from override import url_save_overload
 
 
 def url_save(
-    url, filepath, bar, refer=None, is_part=False, faker=False,
-    headers=None, timeout=None, **kwargs
+        url, filepath, bar, refer=None, is_part=False, faker=False,
+        headers=None, timeout=None, **kwargs
 ):
     tmp_headers = headers.copy() if headers is not None else {}
     # When a referer specified with param refer,
@@ -28,7 +28,7 @@ def url_save(
                     bar.done()
                 print(
                     'Skipping {}: file already exists'.format(common.tr(you_get.os.path.basename(filepath))
-                    )
+                                                              )
                 )
             else:
                 if bar:
@@ -129,6 +129,7 @@ def url_save(
         you_get.os.remove(filepath)
     you_get.os.rename(temp_filepath, filepath)
 
+
 def main(**kwargs):
     print(**kwargs)
 
@@ -136,19 +137,17 @@ def main(**kwargs):
 
 
 if __name__ == '__main__':
-    url = sys.stdin.readline()
+    # url = sys.stdin.readline()
+    # if len(sys.argv) < 3:
+    #     exit()
 
-    if len(sys.argv) < 3:
-        exit()
-
+    sys.argv.append('--debug')
+    url = 'https://www.youtube.com/watch?v=twtW2qG8P0g'
     sys.argv.append(url)
-
     you_get.common.url_save = url_save_overload
 
     you_get.common.main()
     print('done')
-
-
 
 
 
